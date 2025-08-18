@@ -11,14 +11,20 @@ const Main = () => {
     const [passwordArray, setpasswordArray] = useState([])
 
     const getPassword = async () => {
-        let passwordData = fetch('http://localhost:3000/')
-        let data = await passwordData.json();
-        if (data) {
-            setpasswordArray(data);
-        } else {
+        try {
+            let response = await fetch('http://localhost:3000/');
+            let data = await response.json();
+            if (data) {
+                setpasswordArray(data);
+            } else {
+                setpasswordArray([]);
+            }
+        } catch (error) {
+            console.error("Error fetching password data:", error);
             setpasswordArray([]);
         }
     };
+
 
     useEffect(() => {
         getPassword()
@@ -67,6 +73,15 @@ const Main = () => {
 
     const addPassword = async () => {
         if (form.url && form.username && form.password) {
+
+            //IF THAT PASSWORD ALREADY EXISTS
+            await fetch(`http://localhost:3000`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: form.id }), // ✅ send only id
+            })
+
+
             const newPassword = { ...form, id: uuidv4() }; // single object
             const newPasswords = [...passwordArray, newPassword];
 
@@ -105,31 +120,47 @@ const Main = () => {
     };
 
 
-    const deleteHandle = (id) => {
-        setpasswordArray(passwordArray.filter(item => item.id !== id));
+    const deleteHandle = async (id) => {
         let c = confirm("Are you sure you want to delete this password?");
-
         if (!c) return;
 
-        localStorage.setItem('passwords', JSON.stringify(passwordArray.filter(item => item.id !== id))); // update localStorage
-        toast.error("Password Deleted Successfully", {
-            position: "top-right",
-            autoClose: 2000,
-            hideProgressBar: true,
-            closeOnClick: true,
-            pauseOnHover: false,
-            draggable: true,
-            theme: "light",
-        });
-        setform({ password: '', url: '', username: '' }); // reset form
+        try {
+            let res = await fetch(`http://localhost:3000`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id }), // ✅ send only id
+            });
+
+            if (res.ok) {
+                setpasswordArray(passwordArray.filter(item => item.id !== id));
+
+                toast.error("Password Deleted Successfully", {
+                    position: "top-right",
+                    autoClose: 2000,
+                    hideProgressBar: true,
+                    closeOnClick: true,
+                    pauseOnHover: false,
+                    draggable: true,
+                    theme: "light",
+                });
+
+                setform({ password: '', url: '', username: '' });
+            } else {
+                toast.error("Failed to delete password");
+            }
+        } catch (err) {
+            toast.error("Server error while deleting password");
+        }
     };
 
+
     const UpdateHandle = (id) => {
+        const toUpdate = passwordArray.find(item => item.id === id);
+        if (!toUpdate) return;
 
-
-        setform(passwordArray.filter(item => item.id === id)[0]); // set form to the item to update
-        const updatedArray = passwordArray.filter(item => item.id !== id);
-        setpasswordArray(updatedArray); // remove the item from the array
+        // Fill the form with selected item
+        setform({ ...toUpdate, id });
+        setpasswordArray(passwordArray.filter(item => item.id !== id)); // remove from list
 
         toast.info("You can now update the password", {
             position: "top-right",
@@ -140,8 +171,8 @@ const Main = () => {
             draggable: true,
             theme: "light",
         });
-
     };
+
 
 
     return (

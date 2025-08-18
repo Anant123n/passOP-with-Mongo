@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 
 // Connection URL (use env if available, else fallback)
-const url = process.env.MONGO_URL || 'mongodb://localhost:27017';
+const url = process.env.mongo_url
 const client = new MongoClient(url);
 
 // Database Name
@@ -42,16 +42,22 @@ app.post('/', async (req, res) => {
   res.send({ success: true, result: insertResult });
 });
 
-// DELETE PASSWORD
 app.delete('/', async (req, res) => {
-  const password = req.body;   // e.g. { "_id": "..." } or { "username": "anant" }
-  const db = client.db(dbName);
-  const collection = db.collection('passwords'); // same name everywhere
+  try {
+    const { id } = req.body; // frontend sends { "id": "123" }
+    const db = client.db(dbName);
+    const collection = db.collection('passwords');
 
-  const deleteResult = await collection.deleteOne(password);
+    const deleteResult = await collection.deleteOne({ id: id });
 
-  res.send({ success: true, result: deleteResult });
+    res.send({ success: true, result: deleteResult });
+  } catch (err) {
+    res.status(500).send({ success: false, error: err.message });
+  }
 });
+
+
+
 
 
 
