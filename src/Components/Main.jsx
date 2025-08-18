@@ -2,7 +2,7 @@ import React from 'react'
 import { useRef, useState, useEffect } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import {v4 as uuidv4} from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 
 const Main = () => {
     const ref = useRef();
@@ -10,7 +10,7 @@ const Main = () => {
     const [form, setform] = useState({ password: '', url: '', username: '' });
     const [passwordArray, setpasswordArray] = useState([])
 
-    const getPassword = async() => {
+    const getPassword = async () => {
         let passwordData = fetch('http://localhost:3000/')
         let data = await passwordData.json();
         if (data) {
@@ -65,48 +65,51 @@ const Main = () => {
         setform({ ...form, [e.target.name]: e.target.value });
     };
 
-    const addPassword = async() => {
+    const addPassword = async () => {
         if (form.url && form.username && form.password) {
-            const newPasswords = [...passwordArray, {...form ,id:uuidv4()}]; // build new array
+            const newPassword = { ...form, id: uuidv4() }; // single object
+            const newPasswords = [...passwordArray, newPassword];
 
-            setpasswordArray(newPasswords);                // update state
-            let res=await fetch('http://localhost:3000/', {
+            setpasswordArray(newPasswords); // update local state
+
+            let res = await fetch('http://localhost:3000/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(newPasswords),
+                body: JSON.stringify(newPassword), // ✅ send only one object
             });
-            
+
             toast.info("Password Saved Successfully", {
-            position: "top-right",
-            autoClose: 2000,
-            hideProgressBar: true,
-            closeOnClick: true,
-            pauseOnHover: false,
-            draggable: true,
-            theme: "light",
-        });
+                position: "top-right",
+                autoClose: 2000,
+                hideProgressBar: true,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: true,
+                theme: "light",
+            });
 
             setform({ password: '', url: '', username: '' }); // reset form
         } else {
             toast.error("Please Fill All Details", {
-            position: "top-right",
-            autoClose: 2000,
-            hideProgressBar: true,
-            closeOnClick: true,
-            pauseOnHover: false,
-            draggable: true,
-            theme: "light",
-        });
+                position: "top-right",
+                autoClose: 2000,
+                hideProgressBar: true,
+                closeOnClick: true,
+                pauseOnHover: false,
+                draggable: true,
+                theme: "light",
+            });
         }
     };
 
+
     const deleteHandle = (id) => {
         setpasswordArray(passwordArray.filter(item => item.id !== id));
-        let c=confirm("Are you sure you want to delete this password?");
+        let c = confirm("Are you sure you want to delete this password?");
 
-        if (!c) return; 
+        if (!c) return;
 
         localStorage.setItem('passwords', JSON.stringify(passwordArray.filter(item => item.id !== id))); // update localStorage
         toast.error("Password Deleted Successfully", {
@@ -122,22 +125,22 @@ const Main = () => {
     };
 
     const UpdateHandle = (id) => {
-        
-        
-            setform(passwordArray.filter(item => item.id === id)[0]); // set form to the item to update
-            const updatedArray = passwordArray.filter(item => item.id !== id);
-            setpasswordArray(updatedArray); // remove the item from the array
-            
-            toast.info("You can now update the password", {
-                position: "top-right",
-                autoClose: 2000,
-                hideProgressBar: true,
-                closeOnClick: true,
-                pauseOnHover: false,
-                draggable: true,
-                theme: "light",
-            });
-        
+
+
+        setform(passwordArray.filter(item => item.id === id)[0]); // set form to the item to update
+        const updatedArray = passwordArray.filter(item => item.id !== id);
+        setpasswordArray(updatedArray); // remove the item from the array
+
+        toast.info("You can now update the password", {
+            position: "top-right",
+            autoClose: 2000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: false,
+            draggable: true,
+            theme: "light",
+        });
+
     };
 
 
@@ -298,7 +301,7 @@ const Main = () => {
 
                                     <td className='flex justify-center items-center gap-2'>
                                         <div className="delete my-2">
-                                            <button onClick={()=>{deleteHandle(item.id)}}><img height="30" width="30" src="public/delete.png" alt="" /></button>
+                                            <button onClick={() => { deleteHandle(item.id) }}><img height="30" width="30" src="public/delete.png" alt="" /></button>
                                         </div>
                                         <div className="update my-2">
                                             <button onClick={() => UpdateHandle(item.id)}><img height="30" width="30" src="public/pencil.png" alt="" /></button>
