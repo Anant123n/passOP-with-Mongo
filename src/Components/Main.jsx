@@ -151,6 +151,7 @@ const Main = () => {
                 theme="light"
 
             />
+            <h1>hii</h1>
 
 
             <div className="container  mx-auto w-2/3 bg-gradient-to-br 0 bg-opacity-95 rounded-3xl shadow-2xl px-6 py-3 flex flex-col items-center  min-h-0">
