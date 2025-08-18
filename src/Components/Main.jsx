@@ -65,12 +65,18 @@ const Main = () => {
         setform({ ...form, [e.target.name]: e.target.value });
     };
 
-    const addPassword = () => {
+    const addPassword = async() => {
         if (form.url && form.username && form.password) {
             const newPasswords = [...passwordArray, {...form ,id:uuidv4()}]; // build new array
 
             setpasswordArray(newPasswords);                // update state
-            localStorage.setItem('passwords', JSON.stringify(newPasswords));
+            let res=await fetch('http://localhost:3000/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(newPasswords),
+            });
             
             toast.info("Password Saved Successfully", {
             position: "top-right",
