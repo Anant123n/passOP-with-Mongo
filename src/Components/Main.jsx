@@ -4,15 +4,19 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { v4 as uuidv4 } from 'uuid';
 
+// ✅ API base URL (Vite env or fallback to localhost)
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
 const Main = () => {
     const ref = useRef();
     const passRef = useRef();
     const [form, setform] = useState({ password: '', url: '', username: '' });
     const [passwordArray, setpasswordArray] = useState([])
 
+    // ✅ Fetch all saved passwords
     const getPassword = async () => {
         try {
-            let response = await fetch('http://localhost:3000/');
+            let response = await fetch(`${API_URL}/`);
             let data = await response.json();
             if (data) {
                 setpasswordArray(data);
@@ -25,15 +29,11 @@ const Main = () => {
         }
     };
 
-
     useEffect(() => {
         getPassword()
-
     }, [])
 
-    // ✅ One clean copy-to-clipboard function
-
-    // ✅ Toast popup on copy
+    // ✅ Copy text to clipboard with toast
     const copyClipboard = (text) => {
         navigator.clipboard.writeText(text)
             .then(() => {
@@ -45,7 +45,6 @@ const Main = () => {
                     pauseOnHover: false,
                     draggable: true,
                     theme: "light",
-
                 });
             })
             .catch(err => {
@@ -53,9 +52,7 @@ const Main = () => {
             });
     };
 
-
-
-
+    // ✅ Toggle password visibility
     const handleShowPassword = () => {
         if (ref.current.src.includes("eye-open.svg")) {
             ref.current.src = "/eye-close.svg";
@@ -67,32 +64,27 @@ const Main = () => {
     };
 
     const handleInputChange = (e) => {
-
         setform({ ...form, [e.target.name]: e.target.value });
     };
 
+    // ✅ Add or update password
     const addPassword = async () => {
         if (form.url && form.username && form.password) {
-
-            //IF THAT PASSWORD ALREADY EXISTS
-            await fetch(`http://localhost:3000`, {
+            // delete old entry if exists
+            await fetch(`${API_URL}/`, {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: form.id }), // ✅ send only id
-            })
+                body: JSON.stringify({ id: form.id }),
+            });
 
-
-            const newPassword = { ...form, id: uuidv4() }; // single object
+            const newPassword = { ...form, id: uuidv4() };
             const newPasswords = [...passwordArray, newPassword];
+            setpasswordArray(newPasswords);
 
-            setpasswordArray(newPasswords); // update local state
-
-            let res = await fetch('http://localhost:3000/', {
+            await fetch(`${API_URL}/`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(newPassword), // ✅ send only one object
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newPassword),
             });
 
             toast.info("Password Saved Successfully", {
@@ -105,7 +97,7 @@ const Main = () => {
                 theme: "light",
             });
 
-            setform({ password: '', url: '', username: '' }); // reset form
+            setform({ password: '', url: '', username: '' });
         } else {
             toast.error("Please Fill All Details", {
                 position: "top-right",
@@ -119,21 +111,20 @@ const Main = () => {
         }
     };
 
-
+    // ✅ Delete password
     const deleteHandle = async (id) => {
         let c = confirm("Are you sure you want to delete this password?");
         if (!c) return;
 
         try {
-            let res = await fetch(`http://localhost:3000`, {
+            let res = await fetch(`${API_URL}/`, {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id }), // ✅ send only id
+                body: JSON.stringify({ id }),
             });
 
             if (res.ok) {
                 setpasswordArray(passwordArray.filter(item => item.id !== id));
-
                 toast.error("Password Deleted Successfully", {
                     position: "top-right",
                     autoClose: 2000,
@@ -143,7 +134,6 @@ const Main = () => {
                     draggable: true,
                     theme: "light",
                 });
-
                 setform({ password: '', url: '', username: '' });
             } else {
                 toast.error("Failed to delete password");
@@ -153,15 +143,12 @@ const Main = () => {
         }
     };
 
-
+    // ✅ Load password into form for editing
     const UpdateHandle = (id) => {
         const toUpdate = passwordArray.find(item => item.id === id);
         if (!toUpdate) return;
-
-        // Fill the form with selected item
         setform({ ...toUpdate, id });
-        setpasswordArray(passwordArray.filter(item => item.id !== id)); // remove from list
-
+        setpasswordArray(passwordArray.filter(item => item.id !== id));
         toast.info("You can now update the password", {
             position: "top-right",
             autoClose: 2000,
@@ -173,184 +160,113 @@ const Main = () => {
         });
     };
 
-
-
     return (
         <div className='flex min-h-[81vh] flex-col [background:radial-gradient(125%_125%_at_50%_10%,#000_40%,#63e_100%)]  '>
+            <ToastContainer />
 
-            <ToastContainer
-                position="top-right"
-                autoClose={5000}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick={false}
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme="light"
-
-            />
-            <h1>hii</h1>
-
-
-            <div className="container  mx-auto w-2/3 bg-gradient-to-br 0 bg-opacity-95 rounded-3xl shadow-2xl px-6 py-3 flex flex-col items-center  min-h-0">
+            <div className="container mx-auto w-2/3 bg-gradient-to-br 0 bg-opacity-95 rounded-3xl shadow-2xl px-6 py-3 flex flex-col items-center">
                 <h1 className="text-3xl font-extrabold text-red-600 mb-1 tracking-wide drop-shadow">(- PassOP -)</h1>
                 <p className="text-lg text-amber-300 mb-3 font-medium">Your Favorite Password Manager</p>
+
                 <div className="flex flex-col items-center gap-4 w-full">
+                    {/* URL */}
                     <input
-                        className="border-2 border-blue-400 rounded-xl px-1 py-3  focus:outline-none focus:ring-4 focus:ring-blue-300 transition-all duration-200 shadow w-full bg-white placeholder-gray-400"
+                        className="border-2 border-blue-400 rounded-xl px-1 py-3 focus:outline-none focus:ring-4 focus:ring-blue-300 shadow w-full bg-white placeholder-gray-400"
                         type="text"
                         placeholder="Enter URL"
                         name="url"
                         onChange={handleInputChange}
-                        value={form.url} // bind value to state
+                        value={form.url}
                     />
+
                     <div className="flex flex-col md:flex-row gap-4 w-full">
+                        {/* Username */}
                         <input
-                            className="border-1 border-blue-400 rounded-xl px-2 py-3  focus:outline-none focus:ring-4 focus:ring-blue-300 transition-all duration-200 shadow w-full bg-white placeholder-gray-400 max-w-2/3"
+                            className="border-1 border-blue-400 rounded-xl px-2 py-3 focus:outline-none focus:ring-4 focus:ring-blue-300 shadow w-full bg-white placeholder-gray-400"
                             type="text"
                             placeholder="Enter Username"
                             name="username"
                             onChange={handleInputChange}
-                            value={form.username} // bind value to state
+                            value={form.username}
                         />
-                        <div className="flex items-center w-full max-w-1/3 relative">
+
+                        {/* Password */}
+                        <div className="flex items-center w-full relative">
                             <input
-                                className="border-1 border-blue-400 rounded-xl px-2 py-4 pr-10 focus:outline-none focus:ring-4 focus:ring-blue-300 transition-all duration-200 shadow w-full bg-white placeholder-gray-400"
-                                type="text"
+                                className="border-1 border-blue-400 rounded-xl px-2 py-4 pr-10 focus:outline-none focus:ring-4 focus:ring-blue-300 shadow w-full bg-white placeholder-gray-400"
+                                type="password"
                                 placeholder="Enter Password"
                                 ref={passRef}
-
-                                name="password" // fixed name attribute
-                                onChange={handleInputChange} // added onChange handler
-                                value={form.password} // bind value to state
+                                name="password"
+                                onChange={handleInputChange}
+                                value={form.password}
                             />
                             <span
                                 className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer"
-                                onClick={handleShowPassword} // fixed function name
+                                onClick={handleShowPassword}
                             >
-                                <img ref={ref} src="/eye-open.svg" alt="" className="w-6 h-6" /> {/* fixed path */}
+                                <img ref={ref} src="/eye-open.svg" alt="toggle" className="w-6 h-6" />
                             </span>
                         </div>
-
                     </div>
-                    <button onClick={addPassword} className="mt-1 bg-gradient-to-r from-red-400 to-pink-500 flex items-center gap-2 justify-center font-bold text-white px-4 py-2 w-50 border-0 rounded-2xl shadow-lg hover:scale-105 transition-all duration-200 text-lg">
-                        <span className="flex items-center">
-                            <lord-icon
-                                src="https://cdn.lordicon.com/efxgwrkc.json"
-                                trigger="hover"
-                                colors="primary:#1b1091">
-                            </lord-icon>
-                        </span>
+
+                    {/* Add Button */}
+                    <button
+                        onClick={addPassword}
+                        className="mt-1 bg-gradient-to-r from-red-400 to-pink-500 flex items-center gap-2 justify-center font-bold text-white px-4 py-2 rounded-2xl shadow-lg hover:scale-105 transition-all duration-200 text-lg"
+                    >
                         Add Password
                     </button>
                 </div>
             </div>
 
-            <div className="passwords">
-
-
-
-
-                <h2 className='text-2xl font-bold bg-gradient-to-r from-pink-500 via-red-500 to-yellow-400 bg-clip-text text-transparent drop-shadow-lg rounded-xl py-9  mx-auto max-w-fit tracking-wide  '>
+            {/* Password List */}
+            <div className="passwords mt-6">
+                <h2 className='text-2xl font-bold bg-gradient-to-r from-pink-500 via-red-500 to-yellow-400 bg-clip-text text-transparent drop-shadow-lg text-center py-4'>
                     Your <span className="text-yellow-400">PassWords</span>
                 </h2>
 
+                {passwordArray.length === 0 && (
+                    <div className='text-center text-amber-300 text-xl'>No Passwords Saved</div>
+                )}
 
-                {passwordArray.length === 0 && <div className=' mx-20 text-amber-300 text-2xl'>No Passwords are Saved</div>}
-
-                {passwordArray.length != 0 && <div>
+                {passwordArray.length > 0 && (
                     <table className="table-fixed border-2 text-amber-50 w-4/5 mx-auto text-center rounded-xl overflow-hidden my-5">
-                        <thead className="bg-gradient-to-r border-yellow-300 from-red-400 to-pink-600 text-white border-2">
+                        <thead className="bg-gradient-to-r from-red-400 to-pink-600 text-white border-2">
                             <tr>
-                                <th className="w-1/3 py-3 px-4 text-center">Site</th>
-                                <th className="w-1/3 py-3 px-4 text-center">UserName</th>
-                                <th className="w-1/3 py-3 px-4 text-center">PassWord</th>
-                                <th className="w-1/5 py-3 px-4 text-center">Action</th>
+                                <th className="w-1/3 py-3 px-4">Site</th>
+                                <th className="w-1/3 py-3 px-4">UserName</th>
+                                <th className="w-1/3 py-3 px-4">PassWord</th>
+                                <th className="w-1/5 py-3 px-4">Action</th>
                             </tr>
                         </thead>
                         <tbody className="bg-gradient-to-r from-red-200 to-pink-300 border-amber-400 border-2">
-                            {passwordArray.map((item, index) => (
-                                <tr
-                                    key={index}
-                                    className="hover:bg-pink-100/40 transition-colors duration-200"
-                                >
-                                    {/* URL */}
-                                    <td className="py-2 px-4">
-                                        <div className="flex items-center">
-                                            <span className="flex-1 truncate">{item.url}</span>
-                                            <button
-                                                className=" bg-yellow-200 hover:bg-yellow-400 transition-colors duration-200 rounded-full p-1 shadow cursor-pointer"
-                                                title="Copy URL"
-                                                onClick={() => copyClipboard(item.url)}
-                                            >
-                                                <lord-icon
-                                                    src="https://cdn.lordicon.com/xuoapdes.json"
-                                                    trigger="hover"
-                                                    style={{ width: "20px", height: "20px" }}
-                                                ></lord-icon>
-                                            </button>
-                                        </div>
+                            {passwordArray.map((item) => (
+                                <tr key={item.id} className="hover:bg-pink-100/40 transition-colors duration-200">
+                                    <td className="py-2 px-4 flex justify-between items-center">
+                                        <span className="truncate">{item.url}</span>
+                                        <button onClick={() => copyClipboard(item.url)}>📋</button>
                                     </td>
-
-                                    {/* Username */}
-                                    <td className="py-2 px-4">
-                                        <div className="flex items-center">
-                                            <span className="flex-1 truncate">{item.username}</span>
-                                            <button
-                                                className=" bg-yellow-200 hover:bg-yellow-400 transition-colors duration-200 rounded-full p-1 shadow cursor-pointer"
-                                                title="Copy Username"
-                                                onClick={() => copyClipboard(item.username)}
-                                            >
-                                                <lord-icon
-                                                    src="https://cdn.lordicon.com/xuoapdes.json"
-                                                    trigger="hover"
-                                                    style={{ width: "20px", height: "20px" }}
-                                                ></lord-icon>
-                                            </button>
-                                        </div>
+                                    <td className="py-2 px-4 flex justify-between items-center">
+                                        <span className="truncate">{item.username}</span>
+                                        <button onClick={() => copyClipboard(item.username)}>📋</button>
                                     </td>
-
-                                    {/* Password */}
-                                    <td className="py-2 px-4">
-                                        <div className="flex items-center">
-                                            <span className="flex-1 truncate">{item.password}</span>
-                                            <button
-                                                className=" bg-yellow-200 hover:bg-yellow-400 transition-colors duration-200 rounded-full p-1 shadow cursor-pointer"
-                                                title="Copy Password"
-                                                onClick={() => copyClipboard(item.password)}
-                                            >
-                                                <lord-icon
-                                                    src="https://cdn.lordicon.com/xuoapdes.json"
-                                                    trigger="hover"
-                                                    style={{ width: "20px", height: "20px" }}
-                                                ></lord-icon>
-                                            </button>
-                                        </div>
+                                    <td className="py-2 px-4 flex justify-between items-center">
+                                        <span className="truncate">{item.password}</span>
+                                        <button onClick={() => copyClipboard(item.password)}>📋</button>
                                     </td>
-
-                                    <td className='flex justify-center items-center gap-2'>
-                                        <div className="delete my-2">
-                                            <button onClick={() => { deleteHandle(item.id) }}><img height="30" width="30" src="public/delete.png" alt="" /></button>
-                                        </div>
-                                        <div className="update my-2">
-                                            <button onClick={() => UpdateHandle(item.id)}><img height="30" width="30" src="public/pencil.png" alt="" /></button>
-                                        </div>
+                                    <td className="flex justify-center items-center gap-2">
+                                        <button onClick={() => deleteHandle(item.id)}>🗑️</button>
+                                        <button onClick={() => UpdateHandle(item.id)}>✏️</button>
                                     </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
-
-                </div>}
-
-
+                )}
             </div>
         </div>
-
-
     )
 }
 
-export default Main
+export default Main;
