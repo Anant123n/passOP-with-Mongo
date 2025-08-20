@@ -317,10 +317,10 @@ const Main = () => {
 
                                     <td className='flex justify-center items-center gap-2'>
                                         <div className="delete my-2">
-                                            <button onClick={() => { deleteHandle(item.id) }}><img height="30" width="30" src="public/delete.png" alt="" /></button>
+                                            <button onClick={() => { deleteHandle(item.id) }}><img height="30" width="30" src="delete.png" alt="" /></button>
                                         </div>
                                         <div className="update my-2">
-                                            <button onClick={() => UpdateHandle(item.id)}><img height="30" width="30" src="public/pencil.png" alt="" /></button>
+                                            <button onClick={() => UpdateHandle(item.id)}><img height="30" width="30" src="pencil.png" alt="" /></button>
                                         </div>
                                     </td>
                                 </tr>
