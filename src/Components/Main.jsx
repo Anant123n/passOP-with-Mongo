@@ -176,11 +176,11 @@ const Main = () => {
                 theme="light"
 
             />
-            <h1>hii</h1>
+            
 
 
             <div className="container  mx-auto w-2/3 bg-gradient-to-br 0 bg-opacity-95 rounded-3xl shadow-2xl px-6 py-3 flex flex-col items-center  min-h-0">
-                <h1 className="text-3xl font-extrabold text-red-600 mb-1 tracking-wide drop-shadow">(- PassOP -)</h1>
+                <h1 className="text-3xl font-extrabold text-red-600 mb-1 tracking-wide drop-shadow">(- ShadowVault -)</h1>
                 <p className="text-lg text-amber-300 mb-3 font-medium">Your Favorite Password Manager</p>
                 <div className="flex flex-col items-center gap-4 w-full">
                     <input

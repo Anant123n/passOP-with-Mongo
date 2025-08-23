@@ -4,7 +4,7 @@ const Navbar = () => {
   return (
     <nav className="bg-gradient-to-r from-red-400 via-pink-400 to-yellow-300 text-black px-8 py-4 w-97% flex justify-between items-center rounded-xl shadow-lg mx-1 my-1 ">
       <div className="logo text-3xl font-extrabold tracking-wider cursor-pointer hover:scale-105 hover:text-white transition-all duration-300">
-        PassOp
+        ShadowVault
       </div>
       <ul className="hidden md:flex gap-10">
         <li>
